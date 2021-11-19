@@ -1,5 +1,11 @@
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QCalendarWidget, QDateEdit, QLabel, QLineEdit, QMainWindow, QPushButton
+from PyQt5.QtWidgets import (
+    QCalendarWidget,
+    QLabel,
+    QLineEdit, 
+    QMainWindow, 
+    QPushButton
+)
+
 from datetime import date
 import db.DBAccess as db
 import db.WorkingDay as wd
@@ -37,13 +43,8 @@ class App(QMainWindow):
 
         self.currentMonth = QLineEdit(self)
         self.currentMonth.setGeometry(400, 225, 70, 30)
-        mRange = wd.GetMonthRangeForDate(date.today())
         
-        self.currentMonth.setText(
-            str(self.db.GetHoursForMonth(
-                mRange[0], mRange[1]
-            ))
-        )
+        self.SetMonthHours(date.today())
         
         self.show()
         
@@ -55,11 +56,7 @@ class App(QMainWindow):
             self.db.GetHoursForDay(chosen)
         ))        
 
-        monthRange = wd.GetMonthRangeForDate(chosen)
-
-        self.currentMonth.setText(str(
-            self.db.GetHoursForMonth(monthRange[0], monthRange[1])
-        ))
+        self.SetMonthHours(chosen)        
 
     def HandleHoursSave(self):
         h = float(self.currentDay.text())
@@ -68,4 +65,13 @@ class App(QMainWindow):
 
         self.db.InsertWorkingDay(wd.WorkingDay(
             chosen, h
+        ))
+
+        self.SetMonthHours(chosen)
+
+    def SetMonthHours(self, currDate:date):
+        monthRange = wd.GetMonthRangeForDate(currDate)
+
+        self.currentMonth.setText(str(
+            self.db.GetHoursForMonth(monthRange[0], monthRange[1])
         ))

@@ -1,14 +1,31 @@
 from datetime import date
 import sqlite3
 import os
-from .WorkingDay import AddZeroToDate, WorkingDay, GetMonthNumber, GetDayStartStr, GetDayEndStr
+from .WorkingDay import (
+    AddZeroToDate,
+    WorkingDay, 
+    GetMonthNumber, 
+    GetDayStartStr,
+    GetDayEndStr
+)
 from sqlite3.dbapi2 import Connection, Error
 
 
 class DBWH():
     def __init__(self) -> None:
-        self.dbPath = os.path.join(os.curdir, "db", "WorkingHours.db")
+        dbFile = os.path.join(os.curdir, "db", "WorkingHours.db")
+        dbExists = True
+        if not os.path.exists(dbFile):
+            f = open(dbFile, "x")
+            f.close()
+            print("DB file created.")
+            dbExists = False
+
+        self.dbPath = dbFile
         self.conn = sqlite3.connect(self.dbPath)
+        
+        if not dbExists:
+            self.CreateTableWorkingHours()
 
     def __del__(self):
         if(self.conn):
@@ -103,7 +120,6 @@ class DBWH():
         curs.close()
 
     def GetHoursForMonth(self, monthStart:date, monthEnd:date)->float:
-        
         sql = """
             SELECT sum(hours)
             FROM workingHours
@@ -153,3 +169,26 @@ class DBWH():
 
         return sum
         
+    def GetWholeMonth(self, monthStart:date, monthEnd:date)->dict[int, float]:
+        sql = """
+            SELECT hours
+            FROM workingHours
+            WHERE day BETWEEN 
+            date(?) and date(?)
+        """
+
+        curs = self.conn.cursor()
+
+        curs.execute(sql, [
+            monthStart, monthEnd
+        ])
+        month = curs.fetchall()
+
+        ret = {}
+
+        for i in range(len(month)):
+            ret[i + 1] = month[i][0]
+
+        curs.close()
+
+        return ret
