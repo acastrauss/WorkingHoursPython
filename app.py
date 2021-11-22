@@ -6,6 +6,9 @@ from PyQt5.QtWidgets import (
     QPushButton
 )
 
+from pyqtgraph import PlotWidget, plot
+import pyqtgraph as pg
+
 from datetime import date
 import db.DBAccess as db
 import db.WorkingDay as wd
@@ -44,6 +47,37 @@ class App(QMainWindow):
         self.currentMonth = QLineEdit(self)
         self.currentMonth.setGeometry(400, 225, 70, 30)
         
+        color = "#087519"
+
+        self.graphPen = pg.mkPen(
+            color=(8, 117, 25),
+            width=5
+            )
+
+        self.graphWidget = pg.PlotWidget(self)
+        self.graphWidget.setGeometry(20, 350, 350, 200)
+        self.graphWidget.setBackground('w')
+        labelStyle = {
+            'color': '#087519',
+            'font-size': '10px'
+        }
+        self.graphWidget.setLabel(
+            'left', 'Hours (h)', **labelStyle
+        )
+        self.graphWidget.setLabel(
+            'bottom', 'Day', **labelStyle
+        )
+
+        self.graphWidget.setTitle(
+            'Hours worked per day in current month', 
+            color=color,
+            size="7pt"
+            )
+        self.graphWidget.showGrid(
+            x=True,
+            y=True
+        )
+
         self.SetMonthHours(date.today())
         
         self.show()
@@ -75,3 +109,17 @@ class App(QMainWindow):
         self.currentMonth.setText(str(
             self.db.GetHoursForMonth(monthRange[0], monthRange[1])
         ))
+
+        monthHours = self.db.GetWholeMonth(monthRange[0], monthRange[1])
+        daysList = list(monthHours.keys())
+        daysList.sort()
+        hoursList = list(monthHours.values())
+        
+        self.graphWidget.clear()
+        
+        if not(len(daysList) == 0 or len(hoursList) == 0):
+            self.graphWidget.plot(daysList, hoursList, pen=self.graphPen)
+            # tickstr = [[(d, str(d)) for d in daysList]]
+            # print(tickstr)
+            # self.graphWidget.setTicks(tickstr)
+            

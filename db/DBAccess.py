@@ -171,9 +171,9 @@ class DBWH():
         
     def GetWholeMonth(self, monthStart:date, monthEnd:date)->dict[int, float]:
         sql = """
-            SELECT hours
+            SELECT hours, day
             FROM workingHours
-            WHERE day BETWEEN 
+            WHERE day BETWEEN
             date(?) and date(?)
         """
 
@@ -183,11 +183,13 @@ class DBWH():
             monthStart, monthEnd
         ])
         month = curs.fetchall()
-
         ret = {}
 
         for i in range(len(month)):
-            ret[i + 1] = month[i][0]
+            dstr = month[i][1].split('-')
+            d = date(int(dstr[0]), int(dstr[1]), int(dstr[2]))
+            
+            ret[d.day] = month[i][0]
 
         curs.close()
 

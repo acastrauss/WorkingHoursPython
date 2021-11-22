@@ -1,0 +1,4 @@
+/.vscode
+/__pycache__
+/db/__pycache__
+/db/WorkingHours.db
