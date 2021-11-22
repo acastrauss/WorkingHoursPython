@@ -191,6 +191,9 @@ class DBWH():
             
             ret[d.day] = month[i][0]
 
+        if(len(ret) == 0):
+            ret = {d:0 for d in range(30)}
+
         curs.close()
 
         return ret
